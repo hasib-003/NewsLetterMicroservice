@@ -43,3 +43,22 @@ func (repo *NewsRepository) SaveNews(news []map[string]interface{}, topic string
 	}
 	return nil
 }
+
+func (repo *NewsRepository) FindTopicByName(name string) ([]model.News, error) {
+	var topics []model.News
+	if err := repo.DB.Where("topic = ?", name).Find(&topics).Error; err != nil {
+		return nil, err
+	}
+	return topics, nil
+}
+
+func (repo *NewsRepository) CreateSubscription(userID uint, topicID uint) error {
+	subscription := &model.Subscription{
+		UserID:  userID,
+		TopicID: topicID,
+	}
+	if err := repo.DB.Create(subscription).Error; err != nil {
+		return err
+	}
+	return nil
+}

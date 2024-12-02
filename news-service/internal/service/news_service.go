@@ -52,7 +52,7 @@ func (s *NewsService) FetchAndStoreNews(topic string) error {
 	}
 	news, ok := apiResponse["articles"].([]interface{})
 	if !ok {
-		return errors.New("Error fetching news")
+		return errors.New("error fetching news")
 	}
 	var newsData []map[string]interface{}
 	for i, data := range news {
@@ -62,4 +62,21 @@ func (s *NewsService) FetchAndStoreNews(topic string) error {
 		newsData = append(newsData, data.(map[string]interface{}))
 	}
 	return s.repository.SaveNews(newsData, topic)
+}
+func (s *NewsService) SubscribeTopic(userID uint, topicName string) (string, error) {
+	log.Println("Subscribing to topic:", topicName)
+	topics, err := s.repository.FindTopicByName(topicName)
+	if err != nil {
+		return "", err
+	}
+	if len(topics) == 0 {
+		return "", errors.New("no topic found")
+	}
+	for _, topic := range topics {
+		err := s.repository.CreateSubscription(userID, topic.ID)
+		if err != nil {
+			return "", err
+		}
+	}
+	return fmt.Sprintf("Successfully subscribed to topic %s", topicName), nil
 }

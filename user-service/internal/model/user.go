@@ -8,3 +8,8 @@ type User struct {
 	Name     string
 	Password string
 }
+type Subscription struct {
+	ID     string `gorm:"primaryKey"`
+	UserID string
+	Topic  string
+}

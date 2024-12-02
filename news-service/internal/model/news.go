@@ -9,3 +9,14 @@ type News struct {
 	Description string `gorm:"not null"`
 	Topic       string `gorm:"not null"`
 }
+
+type Topic struct {
+	gorm.Model
+	Name string `gorm:"unique"`
+}
+
+type Subscription struct {
+	gorm.Model
+	UserID  uint
+	TopicID uint
+}

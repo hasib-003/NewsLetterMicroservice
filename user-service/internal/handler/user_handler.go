@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/service"
+	"log"
 	"net/http"
 )
 
@@ -41,4 +42,22 @@ func (uc *UserController) GetUserByEmail(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": user})
+}
+
+func (uc *UserController) SubscribeToTopic(c *gin.Context) {
+	var request struct {
+		UserID uint   `json:"user_id"`
+		Topic  string `json:"topic"`
+	}
+	if err := c.ShouldBind(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	log.Printf("handler topic:%v", request.Topic)
+	err := uc.UserService.SubscribeToTopic(request.UserID, request.Topic)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		return
+	}
+
 }

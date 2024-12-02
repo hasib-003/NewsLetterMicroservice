@@ -1,0 +1,16 @@
+syntax ="proto3";
+package subscription;
+option go_package = "./;subscription";
+service NewsService {
+  rpc SubscribeToTopic(SubscribeRequest) returns (SubscribeResponse);
+}
+
+message SubscribeRequest {
+  uint32 user_id = 1;
+  string topic_name = 2;
+}
+
+message SubscribeResponse {
+  bool success = 1;
+  string message = 2;
+}

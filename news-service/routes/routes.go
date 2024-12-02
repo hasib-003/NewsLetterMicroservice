@@ -15,5 +15,4 @@ func RegisterNewsRoutes(router *gin.Engine) {
 	newsHandler := handler.NewNewsHandler(newsService)
 
 	router.GET("/fetchNews", newsHandler.FetchAndStoreNews)
-
 }
