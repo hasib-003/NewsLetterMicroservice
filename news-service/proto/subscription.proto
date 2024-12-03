@@ -3,6 +3,7 @@ package subscription;
 option go_package = "./;subscription";
 service NewsService {
   rpc SubscribeToTopic(SubscribeRequest) returns (SubscribeResponse);
+  rpc GetSubscribedTopics(GetTopicRequest) returns (GetTopicResponse);
 }
 
 message SubscribeRequest {
@@ -13,4 +14,10 @@ message SubscribeRequest {
 message SubscribeResponse {
   bool success = 1;
   string message = 2;
+}
+message GetTopicRequest{
+  uint32 user_id=1;
+}
+message GetTopicResponse{
+  repeated string topics=1;
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/service"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type UserController struct {
@@ -59,5 +60,19 @@ func (uc *UserController) SubscribeToTopic(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
+}
+func (uc *UserController) GetSubscribedTopic(c *gin.Context) {
+	userIDParam := c.Param("user_id")
+	log.Printf("handler topic:%v", userIDParam)
+	userID, err := strconv.ParseUint(userIDParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user id"})
+		return
+	}
+	topics, err := uc.UserService.GetSubscribedTopics(uint(userID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, gin.H{"data": topics})
 
 }

@@ -6,6 +6,7 @@ import (
 	models "github.com/hasib-003/newsLetterMicroservice/user-service/internal/model"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/repository"
 	subscription "github.com/hasib-003/newsLetterMicroservice/user-service/proto"
+
 	"log"
 )
 
@@ -58,4 +59,13 @@ func (s *UserService) SubscribeToTopic(userID uint, topic string) error {
 		return fmt.Errorf("subscription failed: %s", res.Message)
 	}
 	return nil
+}
+func (s *UserService) GetSubscribedTopics(userID uint) ([]string, error) {
+	req := &subscription.GetTopicRequest{UserId: uint32(userID)}
+	res, err := s.newsClient.GetSubscribedTopics(context.Background(), req)
+	if err != nil {
+		log.Printf("get topic error: %v", err)
+		return nil, err
+	}
+	return res.Topics, nil
 }

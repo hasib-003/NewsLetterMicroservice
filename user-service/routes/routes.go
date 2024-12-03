@@ -15,5 +15,6 @@ func RegisterRoutes(router *gin.Engine, userService *service.UserService) {
 	router.POST("/register", userHandler.RegisterUser)
 	router.GET("/getUserByEmail", userHandler.GetUserByEmail)
 	router.POST("/subscribeToTopic", userHandler.SubscribeToTopic)
+	router.GET("/getSubscribedTopic/:user_id", userHandler.GetSubscribedTopic)
 
 }

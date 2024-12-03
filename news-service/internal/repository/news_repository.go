@@ -51,6 +51,19 @@ func (repo *NewsRepository) FindTopicByName(name string) ([]model.News, error) {
 	}
 	return topics, nil
 }
+func (repo *NewsRepository) GetSubscribedTopicsByUserID(userID uint) ([]string, error) {
+	var topics []string
+
+	if err := repo.DB.Table("subscriptions").
+		Select("news.topic").
+		Joins("JOIN news ON subscriptions.topic_id = news.id").
+		Where("subscriptions.user_id = ?", userID).
+		Pluck("news.topic", &topics).Error; err != nil {
+		return nil, err
+	}
+
+	return topics, nil
+}
 
 func (repo *NewsRepository) CreateSubscription(userID uint, topicID uint) error {
 	subscription := &model.Subscription{

@@ -25,6 +25,14 @@ func (h *NewsServiceHandler) SubscribeToTopic(ctx context.Context, req *subscrip
 		Message: message,
 	}, nil
 }
+func (h *NewsServiceHandler) GetSubscribedTopics(ctx context.Context, req *subscription.GetTopicRequest) (*subscription.GetTopicResponse, error) {
+	log.Printf("Fetching topics for user ID: %v", req.GetUserId())
+	topics, err := h.NewsService.GetSubscribedTopics(uint(req.GetUserId()))
+	if err != nil {
+		return nil, err
+	}
+	return &subscription.GetTopicResponse{Topics: topics}, nil
+}
 
 func RegisterNewsServiceServer(srv *grpc.Server, handler *NewsServiceHandler) {
 	subscription.RegisterNewsServiceServer(srv, handler)

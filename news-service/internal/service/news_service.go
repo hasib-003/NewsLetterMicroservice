@@ -80,3 +80,6 @@ func (s *NewsService) SubscribeTopic(userID uint, topicName string) (string, err
 	}
 	return fmt.Sprintf("Successfully subscribed to topic %s", topicName), nil
 }
+func (s *NewsService) GetSubscribedTopics(userID uint) ([]string, error) {
+	return s.repository.GetSubscribedTopicsByUserID(userID)
+}
