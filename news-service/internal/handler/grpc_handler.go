@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"github.com/hasib-003/newsLetterMicroservice/news-service/internal/service"
 	subscription "github.com/hasib-003/newsLetterMicroservice/news-service/proto"
 	"google.golang.org/grpc"
@@ -32,6 +33,15 @@ func (h *NewsServiceHandler) GetSubscribedTopics(ctx context.Context, req *subsc
 		return nil, err
 	}
 	return &subscription.GetTopicResponse{Topics: topics}, nil
+}
+func (h *NewsServiceHandler) GetSubscribedNews(ctx context.Context, req *subscription.GetSubscribedNewsRequest) (*subscription.GetSubscribedNewsResponse, error) {
+	newsItems, err := h.NewsService.GetSubscribedNews(uint(req.UserId))
+	if err != nil {
+		return nil, fmt.Errorf("NewsService.GetSubscribedNews err:%v", err)
+	}
+	return &subscription.GetSubscribedNewsResponse{
+		NewsItems: newsItems,
+	}, nil
 }
 
 func RegisterNewsServiceServer(srv *grpc.Server, handler *NewsServiceHandler) {

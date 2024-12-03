@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hasib-003/newsLetterMicroservice/news-service/internal/repository"
+	subscription "github.com/hasib-003/newsLetterMicroservice/news-service/proto"
 	"github.com/joho/godotenv"
 	"io"
 	"log"
@@ -82,4 +83,20 @@ func (s *NewsService) SubscribeTopic(userID uint, topicName string) (string, err
 }
 func (s *NewsService) GetSubscribedTopics(userID uint) ([]string, error) {
 	return s.repository.GetSubscribedTopicsByUserID(userID)
+}
+func (s *NewsService) GetSubscribedNews(userID uint) ([]*subscription.NewsItem, error) {
+	subscribedNews, err := s.repository.GetUserSubscribedNews(userID)
+	if err != nil {
+		return nil, err
+	}
+	var newsItem []*subscription.NewsItem
+	for _, news := range subscribedNews {
+		newsItem = append(newsItem, &subscription.NewsItem{
+			NewsId:      uint32(news.NewsID),
+			Title:       news.Title,
+			Description: news.Description,
+			TopicName:   news.TopicName,
+		})
+	}
+	return newsItem, nil
 }

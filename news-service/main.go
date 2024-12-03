@@ -11,7 +11,7 @@ import (
 
 func main() {
 	config.ConnectDB()
-	err := config.DB.AutoMigrate(&model.News{}, &model.Topic{}, &model.Subscription{})
+	err := config.DB.AutoMigrate(&model.News{}, &model.UserSubscribedNews{}, &model.Subscription{})
 	if err != nil {
 		panic(err)
 	}

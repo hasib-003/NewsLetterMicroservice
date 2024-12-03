@@ -4,6 +4,7 @@ option go_package = "./;subscription";
 service NewsService {
   rpc SubscribeToTopic(SubscribeRequest) returns (SubscribeResponse);
   rpc GetSubscribedTopics(GetTopicRequest) returns (GetTopicResponse);
+  rpc GetSubscribedNews(GetSubscribedNewsRequest) returns (GetSubscribedNewsResponse);
 }
 
 message SubscribeRequest {
@@ -20,4 +21,18 @@ message GetTopicRequest{
 }
 message GetTopicResponse{
   repeated string topics=1;
+}
+message GetSubscribedNewsRequest {
+  uint32 user_id = 1;
+}
+
+message GetSubscribedNewsResponse {
+  repeated NewsItem news_items = 1;
+}
+
+message NewsItem {
+  uint32 news_id = 1;
+  string title = 2;
+  string description = 3;
+  string topic_name = 4;
 }

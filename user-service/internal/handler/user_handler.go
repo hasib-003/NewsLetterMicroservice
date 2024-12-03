@@ -76,3 +76,18 @@ func (uc *UserController) GetSubscribedTopic(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": topics})
 
 }
+func (uc *UserController) GetSubscribedNews(c *gin.Context) {
+	userIDParam := c.Param("user_id")
+	log.Printf("handler topic:%v", userIDParam)
+	userID, err := strconv.ParseUint(userIDParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user id"})
+		return
+	}
+	news, err := uc.UserService.GetSubscribedNews(uint(userID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": news})
+}

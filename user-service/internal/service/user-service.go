@@ -69,3 +69,15 @@ func (s *UserService) GetSubscribedTopics(userID uint) ([]string, error) {
 	}
 	return res.Topics, nil
 }
+func (s *UserService) GetSubscribedNews(userID uint) ([]*subscription.NewsItem, error) {
+	req := &subscription.GetSubscribedNewsRequest{
+		UserId: uint32(userID),
+	}
+	res, err := s.newsClient.GetSubscribedNews(context.Background(), req)
+	if err != nil {
+		log.Printf("get news error: %v", err)
+		return nil, err
+	}
+	return res.NewsItems, nil
+
+}

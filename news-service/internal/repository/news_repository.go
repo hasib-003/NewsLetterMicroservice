@@ -75,3 +75,24 @@ func (repo *NewsRepository) CreateSubscription(userID uint, topicID uint) error 
 	}
 	return nil
 }
+
+func (repo *NewsRepository) GetUserSubscribedNews(userID uint) ([]model.UserSubscribedNews, error) {
+	var subscribedNews []model.UserSubscribedNews
+	var subscriptions []model.Subscription
+	if err := repo.DB.Where("user_id = ?", userID).Find(&subscriptions).Error; err != nil {
+		return nil, err
+	}
+	for _, subscription := range subscriptions {
+		var news model.News
+		if err := repo.DB.Where("id = ?", subscription.TopicID).First(&news).Error; err != nil {
+			return nil, err
+		}
+		subscribedNews = append(subscribedNews, model.UserSubscribedNews{
+			NewsID:      news.ID,
+			Title:       news.Title,
+			Description: news.Description,
+			TopicName:   news.Topic,
+		})
+	}
+	return subscribedNews, nil
+}
