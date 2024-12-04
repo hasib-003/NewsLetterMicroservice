@@ -61,7 +61,6 @@ func (repo *NewsRepository) GetSubscribedTopicsByUserID(userID uint) ([]string, 
 		Pluck("news.topic", &topics).Error; err != nil {
 		return nil, err
 	}
-
 	return topics, nil
 }
 

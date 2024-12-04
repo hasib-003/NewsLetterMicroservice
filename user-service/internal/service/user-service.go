@@ -46,13 +46,13 @@ func (s *UserService) SubscribeToTopic(email string, topic string) error {
 		log.Println("no email found")
 		return err
 	}
+	log.Printf("Userid>>>>>>>>%v", user.ID)
 	req := &subscription.SubscribeRequest{
 		UserId:    uint32(user.ID),
 		TopicName: topic,
 	}
-	log.Printf("Sending request with topic: %v", req.TopicName)
+	log.Printf("request userid %v %v", req.GetUserId(), req)
 	res, err := s.newsClient.SubscribeToTopic(context.Background(), req)
-	log.Println("after grpc")
 
 	if err != nil {
 		log.Println(err)

@@ -35,6 +35,7 @@ func (uc *UserController) RegisterUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": user})
 }
+
 func (uc *UserController) GetUserByEmail(c *gin.Context) {
 	email := c.Query("email")
 	user, err := uc.UserService.GetUserByEmail(email)
@@ -43,6 +44,14 @@ func (uc *UserController) GetUserByEmail(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": user})
+}
+
+func (uc *UserController) GetAllUserEmails(c *gin.Context) {
+	emails, err := uc.UserService.GetAllUserEmails()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, gin.H{"data": emails})
 }
 
 func (uc *UserController) SubscribeToTopic(c *gin.Context) {
@@ -60,6 +69,7 @@ func (uc *UserController) SubscribeToTopic(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{"message": "successfully subscribed to topic"})
 }
 func (uc *UserController) GetSubscribedTopic(c *gin.Context) {
 	userIDParam := c.Param("user_id")
@@ -91,13 +101,7 @@ func (uc *UserController) GetSubscribedNews(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": news})
 }
-func (uc *UserController) GetAllUserEmails(c *gin.Context) {
-	emails, err := uc.UserService.GetAllUserEmails()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
-	c.JSON(http.StatusOK, gin.H{"data": emails})
-}
+
 func (uc *UserController) SendEmails(c *gin.Context) {
 	err := uc.UserService.SendEmailsToAllUsers()
 	if err != nil {

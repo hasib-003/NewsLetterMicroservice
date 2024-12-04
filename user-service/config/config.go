@@ -31,13 +31,12 @@ func ConnectDB() {
 		log.Fatal("Error connecting to the database:", err)
 	}
 
-	// Test the connection by pinging the database
-	sqlDB, err := DB.DB() // Get the underlying *sql.DB object
+	sqlDB, err := DB.DB()
 	if err != nil {
 		log.Fatal("Error obtaining the DB instance:", err)
 	}
 
-	err = sqlDB.Ping() // Test the connection with Ping
+	err = sqlDB.Ping()
 	if err != nil {
 		log.Fatal("Error pinging database:", err)
 	}

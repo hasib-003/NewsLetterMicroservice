@@ -16,6 +16,7 @@ type NewsServiceHandler struct {
 
 func (h *NewsServiceHandler) SubscribeToTopic(ctx context.Context, req *subscription.SubscribeRequest) (*subscription.SubscribeResponse, error) {
 	log.Printf("topic name:%v", req.TopicName)
+	log.Printf("userid:%v", req.UserId)
 	message, err := h.NewsService.SubscribeTopic(uint(req.GetUserId()), req.GetTopicName())
 
 	if err != nil {

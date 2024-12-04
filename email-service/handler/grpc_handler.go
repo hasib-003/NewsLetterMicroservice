@@ -42,9 +42,7 @@ func (h *EmailHandler) SendEmails(ctx context.Context, req *email.SendEmailsRequ
 }
 func SendEmail(to, subject, body string) error {
 	apiKey := os.Getenv("SENDGRID_API_KEY")
-	log.Printf("send email function is called with API key: %v", apiKey)
 	from := os.Getenv("SENDER_EMAIL")
-	log.Printf("send email function is called with email function: %v", from)
 	client := sendgrid.NewSendClient(apiKey)
 	message := mail.NewSingleEmail(
 		mail.NewEmail("Newsletter", from),
@@ -54,7 +52,7 @@ func SendEmail(to, subject, body string) error {
 		body,
 	)
 
-	//log.Printf("Sending email to: %s\nSubject: %s\nBody: %s\nFrom: %s\n", to, subject, body, from)
+	log.Printf("Sending email to: %s\nSubject:  %s\nFrom: %s\n", to, subject, from)
 	_, err := client.Send(message)
 	if err != nil {
 		log.Printf("Failed to send email to %s: %v", to, err)
