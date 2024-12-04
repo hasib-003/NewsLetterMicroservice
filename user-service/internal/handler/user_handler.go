@@ -47,15 +47,15 @@ func (uc *UserController) GetUserByEmail(c *gin.Context) {
 
 func (uc *UserController) SubscribeToTopic(c *gin.Context) {
 	var request struct {
-		UserID uint   `json:"user_id"`
-		Topic  string `json:"topic"`
+		Email string `json:"email"`
+		Topic string `json:"topic"`
 	}
 	if err := c.ShouldBind(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	log.Printf("handler topic:%v", request.Topic)
-	err := uc.UserService.SubscribeToTopic(request.UserID, request.Topic)
+	err := uc.UserService.SubscribeToTopic(request.Email, request.Topic)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
@@ -90,4 +90,20 @@ func (uc *UserController) GetSubscribedNews(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": news})
+}
+func (uc *UserController) GetAllUserEmails(c *gin.Context) {
+	emails, err := uc.UserService.GetAllUserEmails()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, gin.H{"data": emails})
+}
+func (uc *UserController) SendEmails(c *gin.Context) {
+	err := uc.UserService.SendEmailsToAllUsers()
+	if err != nil {
+		log.Printf("send emails to all users error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": "emails sent"})
 }

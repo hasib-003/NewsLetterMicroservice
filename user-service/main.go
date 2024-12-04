@@ -4,7 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/repository"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/service"
-	subscription "github.com/hasib-003/newsLetterMicroservice/user-service/proto"
+	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/email"
+	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/subscription"
 
 	"github.com/hasib-003/newsLetterMicroservice/user-service/config"
 	models "github.com/hasib-003/newsLetterMicroservice/user-service/internal/model"
@@ -15,12 +16,29 @@ import (
 )
 
 func main() {
-	conn, err := grpc.NewClient("localhost:5001", grpc.WithInsecure())
+	newsconn, err := grpc.NewClient("localhost:5001", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	defer conn.Close()
-	newsClient := subscription.NewNewsServiceClient(conn)
+	defer func(newsconn *grpc.ClientConn) {
+		err := newsconn.Close()
+		if err != nil {
+
+		}
+	}(newsconn)
+	newsClient := subscription.NewNewsServiceClient(newsconn)
+
+	emailconn, err := grpc.NewClient("localhost:50050", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer func(emailconn *grpc.ClientConn) {
+		err := emailconn.Close()
+		if err != nil {
+
+		}
+	}(emailconn)
+	emailClient := email.NewEmailServiceClient(emailconn)
 
 	config.ConnectDB()
 	err = config.DB.AutoMigrate(&models.User{})
@@ -28,7 +46,7 @@ func main() {
 		panic(err)
 	}
 	userrepo := repository.NewUserRepository(config.DB)
-	userService := service.NewUserService(userrepo, newsClient)
+	userService := service.NewUserService(userrepo, newsClient, emailClient)
 	server := gin.Default()
 
 	routes.RegisterRoutes(server, userService)

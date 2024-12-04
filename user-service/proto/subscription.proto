@@ -1,6 +1,6 @@
 syntax ="proto3";
 package subscription;
-option go_package = "./;subscription";
+option go_package = ".;subscription";
 service NewsService {
   rpc SubscribeToTopic(SubscribeRequest) returns (SubscribeResponse);
   rpc GetSubscribedTopics(GetTopicRequest) returns (GetTopicResponse);

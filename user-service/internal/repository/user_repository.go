@@ -33,3 +33,14 @@ func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 	}
 	return user, nil
 }
+func (r *UserRepository) GetAllUserEmails() ([]string, error) {
+	var emails []string
+	var users []*models.User
+	if err := r.DB.Select("email").Find(&users).Error; err != nil {
+		return []string{}, err
+	}
+	for _, user := range users {
+		emails = append(emails, user.Email)
+	}
+	return emails, nil
+}

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package email;
+option go_package =".;email";
+
+service EmailService {
+  rpc SendEmails(SendEmailsRequest) returns (SendEmailsResponse);
+}
+
+message News {
+  string title = 1;
+  string description = 2;
+  string topic_name = 3;
+}
+
+message UserWithNews {
+  string email = 1;
+  repeated News news_list = 2;
+}
+
+message SendEmailsRequest {
+  repeated UserWithNews users_with_news = 1;
+}
+
+message SendEmailsResponse {
+  map<string, string> email_status = 1;
+}
