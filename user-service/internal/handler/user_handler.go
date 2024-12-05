@@ -73,13 +73,13 @@ func (uc *UserController) SubscribeToTopic(c *gin.Context) {
 }
 func (uc *UserController) GetSubscribedTopic(c *gin.Context) {
 	userIDParam := c.Param("user_id")
-	log.Printf("handler topic:%v", userIDParam)
+
 	userID, err := strconv.ParseUint(userIDParam, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user id"})
 		return
 	}
-	topics, err := uc.UserService.GetSubscribedTopics(uint(userID))
+	topics, err := uc.UserService.GetSubscribedTopics(uint32(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}

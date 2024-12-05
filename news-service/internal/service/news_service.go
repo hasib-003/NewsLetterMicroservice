@@ -65,8 +65,7 @@ func (s *NewsService) FetchAndStoreNews(topic string) error {
 	return s.repository.SaveNews(newsData, topic)
 }
 func (s *NewsService) SubscribeTopic(userID uint, topicName string) (string, error) {
-	log.Println("Subscribing to topic:", topicName)
-	log.Println("Subscribing to topic:", userID)
+
 	topics, err := s.repository.FindTopicByName(topicName)
 	if err != nil {
 		return "", err

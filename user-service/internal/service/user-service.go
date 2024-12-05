@@ -46,12 +46,10 @@ func (s *UserService) SubscribeToTopic(email string, topic string) error {
 		log.Println("no email found")
 		return err
 	}
-	log.Printf("Userid>>>>>>>>%v", user.ID)
 	req := &subscription.SubscribeRequest{
 		UserId:    uint32(user.ID),
 		TopicName: topic,
 	}
-	log.Printf("request userid %v %v", req.GetUserId(), req)
 	res, err := s.newsClient.SubscribeToTopic(context.Background(), req)
 
 	if err != nil {
@@ -63,8 +61,9 @@ func (s *UserService) SubscribeToTopic(email string, topic string) error {
 	}
 	return nil
 }
-func (s *UserService) GetSubscribedTopics(userID uint) ([]string, error) {
-	req := &subscription.GetTopicRequest{UserId: uint32(userID)}
+
+func (s *UserService) GetSubscribedTopics(userID uint32) ([]string, error) {
+	req := &subscription.GetTopicRequest{UserId: userID}
 	res, err := s.newsClient.GetSubscribedTopics(context.Background(), req)
 	if err != nil {
 		log.Printf("get topic error: %v", err)
@@ -72,6 +71,7 @@ func (s *UserService) GetSubscribedTopics(userID uint) ([]string, error) {
 	}
 	return res.Topics, nil
 }
+
 func (s *UserService) GetSubscribedNews(userID uint) ([]*subscription.NewsItem, error) {
 	req := &subscription.GetSubscribedNewsRequest{
 		UserId: uint32(userID),
@@ -84,6 +84,7 @@ func (s *UserService) GetSubscribedNews(userID uint) ([]*subscription.NewsItem, 
 	return res.NewsItems, nil
 
 }
+
 func (s *UserService) GetAllUserEmails() ([]string, error) {
 	emails, err := s.repository.GetAllUserEmails()
 	if err != nil {
@@ -125,6 +126,7 @@ func (s *UserService) GetUserWithNews() ([]*email.UserWithNews, error) {
 	}
 	return userWithNews, nil
 }
+
 func (s *UserService) SendEmailsToAllUsers() error {
 	userWithNews, err := s.GetUserWithNews()
 	if err != nil {
