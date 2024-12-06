@@ -1,0 +1,56 @@
+swagger: "2.0"
+info:
+  title: News API
+  description: API to fetch and store news articles based on a specific topic.
+  version: "1.0.0"
+  contact:
+    name: Your Name
+    email: your.email@example.com
+
+paths:
+  /fetchNews:
+    get:
+      summary: Fetch and store news articles for a given topic
+      description: This endpoint fetches news articles for the provided topic and stores them in the database.
+      tags:
+        - News
+      parameters:
+        - name: topic
+          in: query
+          description: The topic for which news should be fetched.
+          required: true
+          type: string
+      responses:
+        "200":
+          description: News fetched and stored successfully
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "News fetched and stored successfully"
+          examples:
+            application/json:
+              message: "News fetched and stored successfully"
+        "400":
+          description: Bad Request - Topic is required
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Topic is required"
+          examples:
+            application/json:
+              error: "Topic is required"
+        "500":
+          description: Internal Server Error
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Internal server error occurred"
+          examples:
+            application/json:
+              error: "Internal server error occurred"

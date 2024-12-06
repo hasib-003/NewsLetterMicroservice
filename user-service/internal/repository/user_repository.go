@@ -23,7 +23,7 @@ func (r *UserRepository) CreateUser(user *models.User) (*models.User, error) {
 }
 func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 	var user *models.User
-	if err := config.DB.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := config.DB.Select("id,email,name").Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Printf("No user found with email: %s", email)
 			return user, nil

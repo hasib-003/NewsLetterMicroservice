@@ -6,6 +6,9 @@ import (
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/service"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/email"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/subscription"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"net/http"
 
 	"github.com/hasib-003/newsLetterMicroservice/user-service/config"
 	models "github.com/hasib-003/newsLetterMicroservice/user-service/internal/model"
@@ -48,6 +51,12 @@ func main() {
 	userrepo := repository.NewUserRepository(config.DB)
 	userService := service.NewUserService(userrepo, newsClient, emailClient)
 	server := gin.Default()
+
+	server.StaticFS("/docs", http.Dir("./docs"))
+	server.GET("/swagger/*any", ginSwagger.CustomWrapHandler(
+		&ginSwagger.Config{
+			URL: "/docs/swagger.yaml", // Tell Swagger UI to use the YAML file
+		}, swaggerFiles.Handler))
 
 	routes.RegisterRoutes(server, userService)
 	err = server.Run(":8080")

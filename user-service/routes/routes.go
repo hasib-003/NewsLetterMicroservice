@@ -17,7 +17,7 @@ func RegisterRoutes(router *gin.Engine, userService *service.UserService) {
 	router.POST("/subscribeToTopic", userHandler.SubscribeToTopic)
 	router.GET("/getSubscribedTopic/:user_id", userHandler.GetSubscribedTopic)
 	router.GET("/getSubscribedNews/:user_id", userHandler.GetSubscribedNews)
-	router.GET("getAllUserEmails", userHandler.GetAllUserEmails)
+	router.GET("/getAllUserEmails", userHandler.GetAllUserEmails)
 	router.GET("/sendEmails", userHandler.SendEmails)
 
 }

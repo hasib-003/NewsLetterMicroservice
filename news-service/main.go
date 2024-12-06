@@ -6,7 +6,10 @@ import (
 	"github.com/hasib-003/newsLetterMicroservice/news-service/internal/model"
 	"github.com/hasib-003/newsLetterMicroservice/news-service/routes"
 	server2 "github.com/hasib-003/newsLetterMicroservice/news-service/server"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
+	"net/http"
 )
 
 func main() {
@@ -19,6 +22,12 @@ func main() {
 	go server2.StartGrpcServer()
 	go func() {
 		server := gin.Default()
+		server.StaticFS("/docs", http.Dir("./docs"))
+		server.GET("/swagger/*any", ginSwagger.CustomWrapHandler(
+			&ginSwagger.Config{
+				URL: "/docs/swagger.yaml", // Tell Swagger UI to use the YAML file
+			}, swaggerFiles.Handler))
+
 		routes.RegisterNewsRoutes(server)
 		err = server.Run(":8081")
 		log.Println("Starting  server on :8081")
