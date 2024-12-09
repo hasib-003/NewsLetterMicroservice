@@ -48,7 +48,7 @@ func (uc *UserController) GetUserByEmail(c *gin.Context) {
 
 func (uc *UserController) GetAllUserEmails(c *gin.Context) {
 	emails, err := uc.UserService.GetAllUserEmails()
-	log.Println("getting all user emails")
+	log.Println("getting all user emails from database ")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
