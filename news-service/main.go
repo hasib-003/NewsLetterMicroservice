@@ -25,7 +25,7 @@ func main() {
 		server.StaticFS("/docs", http.Dir("./docs"))
 		server.GET("/swagger/*any", ginSwagger.CustomWrapHandler(
 			&ginSwagger.Config{
-				URL: "/docs/swagger.yaml", // Tell Swagger UI to use the YAML file
+				URL: "/docs/swagger.yaml",
 			}, swaggerFiles.Handler))
 
 		routes.RegisterNewsRoutes(server)

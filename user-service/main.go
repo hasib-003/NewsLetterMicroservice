@@ -9,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"google.golang.org/grpc/credentials/insecure"
 	"net/http"
 
 	"github.com/hasib-003/newsLetterMicroservice/user-service/config"
@@ -24,7 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-	newsconn, err := grpc.NewClient("localhost:5001", grpc.WithInsecure())
+	newsconn, err := grpc.NewClient("localhost:5001", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
@@ -36,7 +37,7 @@ func main() {
 	}(newsconn)
 	newsClient := subscription.NewNewsServiceClient(newsconn)
 
-	emailconn, err := grpc.NewClient("localhost:50050", grpc.WithInsecure())
+	emailconn, err := grpc.NewClient("localhost:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
