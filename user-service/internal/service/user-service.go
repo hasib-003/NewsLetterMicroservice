@@ -2,11 +2,15 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	models "github.com/hasib-003/newsLetterMicroservice/user-service/internal/model"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/repository"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/email"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/subscription"
+	"github.com/hasib-003/newsLetterMicroservice/user-service/utils"
+	"golang.org/x/crypto/bcrypt"
+	"strconv"
 
 	"log"
 )
@@ -25,10 +29,14 @@ func NewUserService(repository *repository.UserRepository, newsClient subscripti
 	}
 }
 func (s *UserService) CreateUser(email, name, password string) (*models.User, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
 	user := &models.User{
 		Email:    email,
 		Name:     name,
-		Password: password,
+		Password: string(hashedPassword),
 	}
 	return s.repository.CreateUser(user)
 }
@@ -39,6 +47,21 @@ func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+func (s *UserService) Login(email, password string) (string, error) {
+	user, err := s.repository.GetUserByEmail(email)
+	if err != nil {
+		return "", errors.New("invalid email or password ")
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return "", errors.New("invalid email or password ")
+	}
+	token, err := utils.GenerateToken(strconv.Itoa(int(user.ID)))
+	if err != nil {
+		return "", errors.New("invalid email or password ")
+	}
+	return token, nil
 }
 func (s *UserService) SubscribeToTopic(email string, topic string) error {
 	user, err := s.GetUserByEmail(email)

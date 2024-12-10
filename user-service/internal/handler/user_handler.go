@@ -45,10 +45,26 @@ func (uc *UserController) GetUserByEmail(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": user})
 }
+func (uc *UserController) Login(c *gin.Context) {
+	var userInput struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := c.ShouldBind(&userInput); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	token, err := uc.UserService.Login(userInput.Email, userInput.Password)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+	}
+	c.JSON(http.StatusOK, gin.H{"token": token})
+}
 
 func (uc *UserController) GetAllUserEmails(c *gin.Context) {
 	emails, err := uc.UserService.GetAllUserEmails()
-	log.Println("getting all user emails from database ")
+	log.Println("getting all user emails from DB ")
+	log.Printf("Che%v", emails)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
