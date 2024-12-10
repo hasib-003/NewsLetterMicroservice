@@ -23,12 +23,13 @@ func (uc *UserController) RegisterUser(c *gin.Context) {
 		Email    string `json:"email"`
 		Name     string `json:"name"`
 		Password string `json:"password"`
+		Role     string `json:"role"`
 	}
 	if err := c.ShouldBind(&userInput); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	user, err := uc.UserService.CreateUser(userInput.Email, userInput.Name, userInput.Password)
+	user, err := uc.UserService.CreateUser(userInput.Email, userInput.Name, userInput.Password, userInput.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -127,6 +128,13 @@ func (uc *UserController) GetSubscribedNews(c *gin.Context) {
 }
 
 func (uc *UserController) SendEmails(c *gin.Context) {
+	role, exists := c.Get("role")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "role not found"})
+	}
+	if role != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "role is not admin"})
+	}
 	err := uc.UserService.SendEmailsToAllUsers()
 	if err != nil {
 		log.Printf("send emails to all users error: %v", err)

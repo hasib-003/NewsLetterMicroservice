@@ -28,7 +28,7 @@ func NewUserService(repository *repository.UserRepository, newsClient subscripti
 		emailClient: emailClient,
 	}
 }
-func (s *UserService) CreateUser(email, name, password string) (*models.User, error) {
+func (s *UserService) CreateUser(email, name, password, role string) (*models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -37,6 +37,7 @@ func (s *UserService) CreateUser(email, name, password string) (*models.User, er
 		Email:    email,
 		Name:     name,
 		Password: string(hashedPassword),
+		Role:     role,
 	}
 	return s.repository.CreateUser(user)
 }
@@ -57,7 +58,7 @@ func (s *UserService) Login(email, password string) (string, error) {
 	if err != nil {
 		return "", errors.New("invalid email or password ")
 	}
-	token, err := utils.GenerateToken(strconv.Itoa(int(user.ID)), email)
+	token, err := utils.GenerateToken(strconv.Itoa(int(user.ID)), email, user.Role)
 	if err != nil {
 		return "", errors.New("invalid email or password ")
 	}

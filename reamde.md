@@ -18,8 +18,8 @@ This is a Newsletter Microservice that allows users to subscribe to topics of th
 - **GORM**: ORM for database interaction.
 - **PostgreSQL**: Database for storing user data and subscriptions.
 - **JWT**: For authentication and token-based user validation.
-- **Email**: For sending subscription updates and newsletters.
-- **Docker**: Containerization of the application.
+- **SendGrid**: For sending subscription updates and newsletters.
+
 
 ## Setup
 

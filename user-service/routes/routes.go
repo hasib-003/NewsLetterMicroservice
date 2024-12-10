@@ -19,7 +19,7 @@ func RegisterRoutes(router *gin.Engine, userService *service.UserService) {
 	router.GET("/getSubscribedTopic/:user_id", middleware.TokenValidationMiddleware(), userHandler.GetSubscribedTopic)
 	router.GET("/getSubscribedNews", middleware.TokenValidationMiddleware(), userHandler.GetSubscribedNews)
 	router.GET("/getAllUserEmails", middleware.TokenValidationMiddleware(), userHandler.GetAllUserEmails)
-	router.GET("/sendEmails", userHandler.SendEmails)
+	router.GET("/sendEmails", middleware.TokenValidationMiddleware(), userHandler.SendEmails)
 	router.POST("/login", userHandler.Login)
 
 }

@@ -47,6 +47,9 @@ func TokenValidationMiddleware() gin.HandlerFunc {
 			if email, ok := claims["email"].(string); ok {
 				c.Set("email", email)
 			}
+			if role, ok := claims["role"].(string); ok {
+				c.Set("role", role)
+			}
 		}
 		c.Next()
 	}
