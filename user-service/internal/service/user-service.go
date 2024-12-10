@@ -57,7 +57,7 @@ func (s *UserService) Login(email, password string) (string, error) {
 	if err != nil {
 		return "", errors.New("invalid email or password ")
 	}
-	token, err := utils.GenerateToken(strconv.Itoa(int(user.ID)))
+	token, err := utils.GenerateToken(strconv.Itoa(int(user.ID)), email)
 	if err != nil {
 		return "", errors.New("invalid email or password ")
 	}

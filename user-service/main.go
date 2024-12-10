@@ -32,7 +32,7 @@ func main() {
 	defer func(newsconn *grpc.ClientConn) {
 		err := newsconn.Close()
 		if err != nil {
-
+			log.Fatalf("could not close connection: %v", err)
 		}
 	}(newsconn)
 	newsClient := subscription.NewNewsServiceClient(newsconn)
@@ -44,7 +44,7 @@ func main() {
 	defer func(emailconn *grpc.ClientConn) {
 		err := emailconn.Close()
 		if err != nil {
-
+			log.Fatalf("could not close connection: %v", err)
 		}
 	}(emailconn)
 	emailClient := email.NewEmailServiceClient(emailconn)
@@ -57,6 +57,10 @@ func main() {
 	userrepo := repository.NewUserRepository(config.DB)
 	userService := service.NewUserService(userrepo, newsClient, emailClient)
 	server := gin.Default()
+	err = server.SetTrustedProxies([]string{"127.0.0.1"})
+	if err != nil {
+		log.Fatalf("failed to set trusted proxies: %v", err)
+	}
 
 	server.StaticFS("/docs", http.Dir("./docs"))
 	server.GET("/swagger/*any", ginSwagger.CustomWrapHandler(

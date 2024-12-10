@@ -14,7 +14,6 @@ import (
 var mySignedKey []byte
 
 func init() {
-	log.Printf("env %v", mySignedKey)
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -40,6 +39,14 @@ func TokenValidationMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
+		}
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			if userId, ok := claims["user_id"].(string); ok {
+				c.Set("userId", userId)
+			}
+			if email, ok := claims["email"].(string); ok {
+				c.Set("email", email)
+			}
 		}
 		c.Next()
 	}
