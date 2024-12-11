@@ -1,10 +1,11 @@
 syntax = "proto3";
 
 package email;
-option go_package ="./;email";
+option go_package =".;email";
 
 service EmailService {
   rpc SendEmails(SendEmailsRequest) returns (SendEmailsResponse);
+  rpc SendIndividualEmail(SendIndividualEmailRequest) returns (SendIndividualEmailResponse);
 }
 
 message News {
@@ -24,4 +25,12 @@ message SendEmailsRequest {
 
 message SendEmailsResponse {
   map<string, string> email_status = 1;
+}
+message  SendIndividualEmailRequest{
+  string email=1;
+  string verificationCode=2;
+}
+message SendIndividualEmailResponse{
+  string message=1;
+  bool success=2;
 }

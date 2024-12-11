@@ -14,6 +14,7 @@ func RegisterRoutes(router *gin.Engine, userService *service.UserService) {
 	userHandler := handler.NewUserController(userService)
 
 	router.POST("/register", userHandler.RegisterUser)
+	router.POST("/verifyEmail", userHandler.VerifyUserEmail)
 	router.GET("/getUserByEmail", userHandler.GetUserByEmail)
 	router.POST("/subscribeToTopic", middleware.TokenValidationMiddleware(), userHandler.SubscribeToTopic)
 	router.GET("/getSubscribedTopic/:user_id", middleware.TokenValidationMiddleware(), userHandler.GetSubscribedTopic)

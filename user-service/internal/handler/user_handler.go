@@ -34,7 +34,38 @@ func (uc *UserController) RegisterUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	user.Password = ""
+	user.VerificationToken = ""
 	c.JSON(http.StatusOK, gin.H{"data": user})
+}
+func (uc *UserController) VerifyUserEmail(c *gin.Context) {
+	var verifyRequest struct {
+		Email             string `json:"email"`
+		VerificationToken string `json:"verification_token"`
+	}
+	if err := c.ShouldBind(&verifyRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		return
+	}
+	user, err := uc.UserService.GetUserByEmail(verifyRequest.Email)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+	if user.Verified {
+		c.JSON(http.StatusConflict, gin.H{"error": "user is already verified"})
+		return
+	}
+	err = uc.UserService.MarkEmailAsVerified(user, verifyRequest.VerificationToken)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if err.Error() == "invalid verification token" || err.Error() == "verification token is already verified" {
+			status = http.StatusUnauthorized
+		}
+		c.JSON(status, gin.H{"error": "failed to mark email as verified"})
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "email verified successfully"})
+
 }
 
 func (uc *UserController) GetUserByEmail(c *gin.Context) {
@@ -46,6 +77,7 @@ func (uc *UserController) GetUserByEmail(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": user})
 }
+
 func (uc *UserController) Login(c *gin.Context) {
 	var userInput struct {
 		Email    string `json:"email"`

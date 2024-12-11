@@ -11,6 +11,7 @@ import (
 	"github.com/hasib-003/newsLetterMicroservice/user-service/utils"
 	"golang.org/x/crypto/bcrypt"
 	"strconv"
+	"time"
 
 	"log"
 )
@@ -28,16 +29,32 @@ func NewUserService(repository *repository.UserRepository, newsClient subscripti
 		emailClient: emailClient,
 	}
 }
-func (s *UserService) CreateUser(email, name, password, role string) (*models.User, error) {
+func (s *UserService) CreateUser(userEmail, name, password, role string) (*models.User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
+	verificationToken, expiresAt := utils.GenerateVerificationToken()
+
 	user := &models.User{
-		Email:    email,
-		Name:     name,
-		Password: string(hashedPassword),
-		Role:     role,
+		Email:             userEmail,
+		Name:              name,
+		Password:          string(hashedPassword),
+		Role:              role,
+		VerificationToken: verificationToken,
+		TokenExpiresAt:    expiresAt,
+		Verified:          false,
+	}
+	req := &email.SendIndividualEmailRequest{
+		Email:            userEmail,
+		VerificationCode: verificationToken,
+	}
+	res, err := s.emailClient.SendIndividualEmail(context.Background(), req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send individual email")
+	}
+	if !res.Success {
+		return nil, fmt.Errorf("email service error: %s", res.Message)
 	}
 	return s.repository.CreateUser(user)
 }
@@ -48,6 +65,24 @@ func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func (s *UserService) MarkEmailAsVerified(user *models.User, token string) error {
+	if user.VerificationToken != token {
+		return errors.New("verification token is invalid")
+	}
+	if time.Now().After(user.TokenExpiresAt) {
+		return errors.New("token is expired")
+	}
+	user.Verified = true
+	user.VerificationToken = ""
+	user.TokenExpiresAt = time.Time{}
+	err := s.repository.VerifyUserEmail(user)
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
 func (s *UserService) Login(email, password string) (string, error) {
 	user, err := s.repository.GetUserByEmail(email)
@@ -64,6 +99,7 @@ func (s *UserService) Login(email, password string) (string, error) {
 	}
 	return token, nil
 }
+
 func (s *UserService) SubscribeToTopic(email string, topic string) error {
 	user, err := s.GetUserByEmail(email)
 	if err != nil {
