@@ -89,6 +89,9 @@ func (s *UserService) Login(email, password string) (string, error) {
 	if err != nil {
 		return "", errors.New("invalid email or password ")
 	}
+	if !user.Verified {
+		return "", errors.New("user email is not verified")
+	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return "", errors.New("invalid email or password ")

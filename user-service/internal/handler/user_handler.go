@@ -84,12 +84,19 @@ func (uc *UserController) Login(c *gin.Context) {
 		Password string `json:"password"`
 	}
 	if err := c.ShouldBind(&userInput); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid input"})
 		return
 	}
 	token, err := uc.UserService.Login(userInput.Email, userInput.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err})
+		if err.Error() == "invalid email or password " {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid email or password"})
+			return
+		}
+		if err.Error() == "user email is not verified" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user email not verified"})
+			return
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
