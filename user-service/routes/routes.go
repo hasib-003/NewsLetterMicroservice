@@ -21,6 +21,7 @@ func RegisterRoutes(router *gin.Engine, userService *service.UserService) {
 	router.GET("/getSubscribedNews", middleware.TokenValidationMiddleware(), userHandler.GetSubscribedNews)
 	router.GET("/getAllUserEmails", middleware.TokenValidationMiddleware(), userHandler.GetAllUserEmails)
 	router.GET("/sendEmails", middleware.TokenValidationMiddleware(), userHandler.SendEmails)
+	router.GET("/publishNews", userHandler.PublishNews)
 	router.POST("/login", userHandler.Login)
 
 }

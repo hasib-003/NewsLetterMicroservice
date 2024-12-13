@@ -182,3 +182,19 @@ func (uc *UserController) SendEmails(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": "emails sent"})
 }
+func (uc *UserController) PublishNews(c *gin.Context) {
+	//role, exists := c.Get("role")
+	//if !exists {
+	//	c.JSON(http.StatusBadRequest, gin.H{"error": "role not found"})
+	//}
+	//if role != "admin" {
+	//	c.JSON(http.StatusForbidden, gin.H{"error": "role is not admin"})
+	//}
+	userWithNews, err := uc.UserService.PublishUserWithNews()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": userWithNews})
+
+}

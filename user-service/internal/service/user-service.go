@@ -204,3 +204,15 @@ func (s *UserService) SendEmailsToAllUsers() error {
 	}
 	return nil
 }
+
+func (s *UserService) PublishUserWithNews() ([]*email.UserWithNews, error) {
+	userWithNews, err := s.GetUserWithNews()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user with news: %v", err)
+	}
+	err = s.repository.PublishUserWithNews(userWithNews)
+	if err != nil {
+		return nil, fmt.Errorf("failed to publish user with news: %v", err)
+	}
+	return userWithNews, nil
+}

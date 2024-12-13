@@ -2,20 +2,22 @@ package handler
 
 import (
 	"context"
-	"errors"
+	"github.com/gin-gonic/gin"
 	email "github.com/hasib-003/newsLetterMicroservice/email-service/proto"
-	"github.com/sendgrid/sendgrid-go"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"github.com/hasib-003/newsLetterMicroservice/email-service/service"
 	"log"
-	"os"
+	"net/http"
 )
 
 type EmailHandler struct {
 	email.UnimplementedEmailServiceServer
+	service *service.EmailService
 }
 
-func NewEmailHandler() *EmailHandler {
-	return &EmailHandler{}
+func NewEmailHandler(service *service.EmailService) *EmailHandler {
+	return &EmailHandler{
+		service: service,
+	}
 }
 func (h *EmailHandler) SendEmails(ctx context.Context, req *email.SendEmailsRequest) (*email.SendEmailsResponse, error) {
 	emailStatus := make(map[string]string)
@@ -28,14 +30,13 @@ func (h *EmailHandler) SendEmails(ctx context.Context, req *email.SendEmailsRequ
 			body += "Description: " + news.Description + "\n"
 			body += "Topic: " + news.TopicName + "\n\n"
 		}
-		err := SendEmail(userEmail, "your Weekly NewsLetter", body)
+		err := h.service.SendEmail(userEmail, "your Weekly NewsLetter", body)
 		if err != nil {
 			log.Printf("send email error: %v", err)
 			emailStatus[userEmail] = "Failed"
 		} else {
 			emailStatus[userEmail] = "Success"
 		}
-
 	}
 	return &email.SendEmailsResponse{
 		EmailStatus: emailStatus,
@@ -45,7 +46,7 @@ func (h *EmailHandler) SendEmails(ctx context.Context, req *email.SendEmailsRequ
 func (h *EmailHandler) SendIndividualEmail(ctx context.Context, req *email.SendIndividualEmailRequest) (*email.SendIndividualEmailResponse, error) {
 	userEmail := req.Email
 	body := req.VerificationCode
-	err := SendEmail(userEmail, "verification code", body)
+	err := h.service.SendEmail(userEmail, "verification code", body)
 	if err != nil {
 		log.Printf("send email error: %v", err)
 	}
@@ -54,27 +55,25 @@ func (h *EmailHandler) SendIndividualEmail(ctx context.Context, req *email.SendI
 		Success: true,
 	}, nil
 }
-func SendEmail(to, subject, body string) error {
-	apiKey := os.Getenv("SENDGRID_API_KEY")
-	from := os.Getenv("SENDER_EMAIL")
-	if apiKey == "" || from == "" {
-		return errors.New("SENDER_EMAIL environment variable not set")
-	}
-	client := sendgrid.NewSendClient(apiKey)
-	message := mail.NewSingleEmail(
-		mail.NewEmail("Newsletter", from),
-		subject,
-		mail.NewEmail("User", to),
-		body,
-		body,
-	)
-
-	log.Printf("Sending email to: %s\nSubject: %s: %s\nFrom: %s\n", to, subject, body, from)
-	response, err := client.Send(message)
+func (h *EmailHandler) StartListening(c *gin.Context) {
+	userWithNewsChan, err := h.service.Repository.ConsumeMessage()
 	if err != nil {
-		log.Printf("Failed to send email to %s: %v", to, err)
-		return err
+		log.Fatalf("fail to consume message, err:%v", err)
 	}
-	log.Printf("Email sent successfully to %s. status code %d", to, response.StatusCode)
-	return nil
+	for msg := range userWithNewsChan {
+		userEmail := msg.Email
+		body := "Here are your subscribed news :\n\n"
+		for _, news := range msg.NewsList {
+			body += "Title: " + news.Title + "\n"
+			body += "Description: " + news.Description + "\n"
+			body += "Topic: " + news.TopicName + "\n\n"
+
+		}
+		err := h.service.SendEmail(userEmail, "Your weekly newsLetter ", body)
+		if err != nil {
+			log.Fatalf("fail to send email to %s: %v", userWithNewsChan, err)
+		}
+		log.Printf("Email sent successfully to %v with body:%v ", msg.Email, body)
+	}
+	c.JSON(http.StatusOK, gin.H{"message :": "email service started listening"})
 }

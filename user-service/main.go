@@ -7,6 +7,7 @@ import (
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/email"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/subscription"
 	"github.com/joho/godotenv"
+	"github.com/streadway/amqp"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"google.golang.org/grpc/credentials/insecure"
@@ -48,13 +49,20 @@ func main() {
 		}
 	}(emailconn)
 	emailClient := email.NewEmailServiceClient(emailconn)
+	rabitmqConn := config.ConnectRabitmq()
+	defer func(rabitmqConn *amqp.Connection) {
+		err := rabitmqConn.Close()
+		if err != nil {
+			log.Fatalf("could not close connection: %v", err)
+		}
+	}(rabitmqConn)
 
 	config.ConnectDB()
 	err = config.DB.AutoMigrate(&models.User{})
 	if err != nil {
 		panic(err)
 	}
-	userrepo := repository.NewUserRepository(config.DB)
+	userrepo := repository.NewUserRepository(config.DB, rabitmqConn)
 	userService := service.NewUserService(userrepo, newsClient, emailClient)
 	server := gin.Default()
 	err = server.SetTrustedProxies([]string{"127.0.0.1"})
