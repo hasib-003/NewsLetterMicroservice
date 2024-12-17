@@ -67,7 +67,6 @@ func (h *EmailHandler) StartListening(c *gin.Context) {
 			body += "Title: " + news.Title + "\n"
 			body += "Description: " + news.Description + "\n"
 			body += "Topic: " + news.TopicName + "\n\n"
-
 		}
 		err := h.service.SendEmail(userEmail, "Your weekly newsLetter ", body)
 		if err != nil {

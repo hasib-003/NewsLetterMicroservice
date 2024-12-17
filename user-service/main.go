@@ -6,6 +6,7 @@ import (
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/service"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/email"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/subscription"
+	"github.com/hasib-003/newsLetterMicroservice/user-service/utils"
 	"github.com/joho/godotenv"
 	"github.com/streadway/amqp"
 	swaggerFiles "github.com/swaggo/files"
@@ -69,7 +70,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to set trusted proxies: %v", err)
 	}
-
+	utils.StartCorn("http://localhost:8080/publishNews")
 	server.StaticFS("/docs", http.Dir("./docs"))
 	server.GET("/swagger/*any", ginSwagger.CustomWrapHandler(
 		&ginSwagger.Config{
