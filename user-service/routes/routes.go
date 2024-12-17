@@ -2,11 +2,9 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/hasib-003/newsLetterMicroservice/user-service/middleware"
-
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/handler"
-
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/service"
+	"github.com/hasib-003/newsLetterMicroservice/user-service/middleware"
 )
 
 func RegisterRoutes(router *gin.Engine, userService *service.UserService) {
@@ -21,7 +19,9 @@ func RegisterRoutes(router *gin.Engine, userService *service.UserService) {
 	router.GET("/getSubscribedNews", middleware.TokenValidationMiddleware(), userHandler.GetSubscribedNews)
 	router.GET("/getAllUserEmails", middleware.TokenValidationMiddleware(), userHandler.GetAllUserEmails)
 	router.GET("/sendEmails", middleware.TokenValidationMiddleware(), userHandler.SendEmails)
-	router.GET("/publishNews", userHandler.PublishNews)
+	router.GET("/publishNews", middleware.TokenValidationMiddleware(), userHandler.PublishNews)
 	router.POST("/login", userHandler.Login)
+	router.GET("/auth/google", userHandler.GoogleLogin)
+	router.GET("/auth/callback", userHandler.GoogleCallback)
 
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/subscription"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/utils"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"strconv"
 	"time"
 
@@ -58,6 +59,7 @@ func (s *UserService) CreateUser(userEmail, name, password, role string) (*model
 	}
 	return s.repository.CreateUser(user)
 }
+
 func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
 	var user *models.User
 	user, err := s.repository.GetUserByEmail(email)
@@ -84,6 +86,7 @@ func (s *UserService) MarkEmailAsVerified(user *models.User, token string) error
 	return nil
 
 }
+
 func (s *UserService) Login(email, password string) (string, error) {
 	user, err := s.repository.GetUserByEmail(email)
 	if err != nil {
@@ -99,6 +102,33 @@ func (s *UserService) Login(email, password string) (string, error) {
 	token, err := utils.GenerateToken(strconv.Itoa(int(user.ID)), email, user.Role)
 	if err != nil {
 		return "", errors.New("invalid email or password ")
+	}
+	return token, nil
+}
+
+func (s *UserService) LoginwithGoogle(email, name string) (string, error) {
+	user, err := s.repository.GetUserByEmail(email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			user, err = s.repository.CreateUser(&models.User{
+				Email:             email,
+				Name:              name,
+				Password:          "",
+				Role:              "user",
+				Verified:          true,
+				VerificationToken: "",
+				TokenExpiresAt:    time.Time{},
+			})
+			if err != nil {
+				return "", errors.New("failed to create user ")
+			}
+		} else {
+			return "", errors.New("error during get user")
+		}
+	}
+	token, err := utils.GenerateToken(strconv.Itoa(int(user.ID)), email, user.Role)
+	if err != nil {
+		return "", errors.New("error generating token")
 	}
 	return token, nil
 }

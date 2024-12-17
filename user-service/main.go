@@ -23,10 +23,12 @@ import (
 )
 
 func main() {
+	gin.SetMode(gin.DebugMode)
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+	utils.SetupOauth()
 	newsconn, err := grpc.NewClient("localhost:5001", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -66,11 +68,11 @@ func main() {
 	userrepo := repository.NewUserRepository(config.DB, rabitmqConn)
 	userService := service.NewUserService(userrepo, newsClient, emailClient)
 	server := gin.Default()
-	err = server.SetTrustedProxies([]string{"127.0.0.1"})
-	if err != nil {
-		log.Fatalf("failed to set trusted proxies: %v", err)
-	}
-	utils.StartCorn("http://localhost:8080/publishNews")
+	//err = server.SetTrustedProxies([]string{"127.0.0.1"})
+	//if err != nil {
+	//	log.Fatalf("failed to set trusted proxies: %v", err)
+	//}
+	//utils.StartCorn("http://localhost:8080/publishNews")
 	server.StaticFS("/docs", http.Dir("./docs"))
 	server.GET("/swagger/*any", ginSwagger.CustomWrapHandler(
 		&ginSwagger.Config{

@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/service"
+	"github.com/markbates/goth/gothic"
 	"log"
 	"net/http"
 	"strconv"
@@ -38,6 +39,7 @@ func (uc *UserController) RegisterUser(c *gin.Context) {
 	user.VerificationToken = ""
 	c.JSON(http.StatusOK, gin.H{"data": user})
 }
+
 func (uc *UserController) VerifyUserEmail(c *gin.Context) {
 	var verifyRequest struct {
 		Email             string `json:"email"`
@@ -101,6 +103,29 @@ func (uc *UserController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
+func (uc *UserController) GoogleLogin(c *gin.Context) {
+	req := c.Request
+	res := c.Writer
+	req.URL.RawQuery = "provider=google"
+	gothic.BeginAuthHandler(res, req)
+}
+
+func (uc *UserController) GoogleCallback(c *gin.Context) {
+	req := c.Request
+	res := c.Writer
+	user, err := gothic.CompleteUserAuth(res, req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to complete user auth"})
+		return
+	}
+	token, err := uc.UserService.LoginwithGoogle(user.Email, user.Name)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "failed to login with google"})
+	}
+	c.JSON(http.StatusOK, gin.H{"successfully login with google . token": token})
+
+}
+
 func (uc *UserController) GetAllUserEmails(c *gin.Context) {
 	emails, err := uc.UserService.GetAllUserEmails()
 	log.Println("getting all user emails from DB ")
@@ -128,6 +153,7 @@ func (uc *UserController) SubscribeToTopic(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "successfully subscribed to topic"})
 }
+
 func (uc *UserController) GetSubscribedTopic(c *gin.Context) {
 	userIDParam := c.Param("user_id")
 
@@ -143,6 +169,7 @@ func (uc *UserController) GetSubscribedTopic(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": topics})
 
 }
+
 func (uc *UserController) GetSubscribedNews(c *gin.Context) {
 	userId, exists := c.Get("userId")
 	if !exists {
@@ -182,14 +209,15 @@ func (uc *UserController) SendEmails(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"data": "emails sent"})
 }
+
 func (uc *UserController) PublishNews(c *gin.Context) {
-	//role, exists := c.Get("role")
-	//if !exists {
-	//	c.JSON(http.StatusBadRequest, gin.H{"error": "role not found"})
-	//}
-	//if role != "admin" {
-	//	c.JSON(http.StatusForbidden, gin.H{"error": "role is not admin"})
-	//}
+	role, exists := c.Get("role")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "role not found"})
+	}
+	if role != "admin" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "role is not admin"})
+	}
 	userWithNews, err := uc.UserService.PublishUserWithNews()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
