@@ -81,7 +81,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 	if err := config.DB.Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Printf("No user found with email: %s", email)
-			return user, nil
+			return user, err
 		}
 		log.Printf("Error fetching user: %v", err)
 		return user, err

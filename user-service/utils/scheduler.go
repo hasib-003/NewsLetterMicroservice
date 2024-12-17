@@ -9,7 +9,7 @@ import (
 
 func StartCorn(endpoint string) {
 	c := cron.New()
-	_, err := c.AddFunc("*/1 * * * *", func() {
+	_, err := c.AddFunc("*/10 * * * *", func() {
 		log.Printf("Cron job : Calling publish news ")
 		resp, err := http.Get(endpoint)
 		if err != nil {
