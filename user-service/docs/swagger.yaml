@@ -14,22 +14,34 @@ paths:
             description: This endpoint registers a new user with email, name, and password.
             tags:
                 - User
+            consumes:
+                - application/json
+            produces:
+                - application/json
             parameters:
-                - name: email
-                  in: body
-                  description: The email of the user.
+                - in: body
+                  name: request body
+                  description: The registration payload.
                   required: true
-                  type: string
-                - name: name
-                  in: body
-                  description: The name of the user.
-                  required: true
-                  type: string
-                - name: password
-                  in: body
-                  description: The password for the user.
-                  required: true
-                  type: string
+                  schema:
+                    type: object
+                    properties:
+                        email:
+                            type: string
+                            example: "example@gmail.com"
+                        name:
+                            type: string
+                            example: "john doe"
+                        password:
+                            type: string
+                            example: "password"
+                        role:
+                            type: string
+                            example: "admin"
+
+
+
+
             responses:
                 "200":
                     description: User successfully registered
