@@ -27,6 +27,10 @@ func init() {
 
 func TokenValidationMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if c.GetHeader("X-Cron-Job") == "true" {
+			c.Next()
+			return
+		}
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header is empty"})

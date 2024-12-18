@@ -9,21 +9,27 @@ import (
 
 func StartCorn(endpoint string) {
 	c := cron.New()
-	_, err := c.AddFunc("*/10 * * * *", func() {
+	_, err := c.AddFunc("*/1 * * * *", func() {
 		log.Printf("Cron job : Calling publish news ")
-		resp, err := http.Get(endpoint)
+		req, err := http.NewRequest("GET", endpoint, nil)
+		if err != nil {
+			log.Println("Error creating new request : ", err)
+		}
+		req.Header.Set("X-Cron-Job", "true")
+
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Println("error calling publish news ")
+			return
 
-		} else {
-			log.Println("Cron job response ", resp.Status)
-			defer func(Body io.ReadCloser) {
-				err := Body.Close()
-				if err != nil {
-					log.Println(err)
-				}
-			}(resp.Body)
 		}
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+				log.Println("error closing body")
+			}
+		}(resp.Body)
+		log.Println("response status : ", resp.Status)
 	})
 	if err != nil {
 		log.Fatalf("error calling publish news %v", err)
