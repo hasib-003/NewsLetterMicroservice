@@ -72,7 +72,7 @@ func (h *EmailHandler) StartListening(c *gin.Context) {
 		if err != nil {
 			log.Fatalf("fail to send email to %s: %v", userWithNewsChan, err)
 		}
-		log.Printf("Email sent successfully to %v with body:%v ", msg.Email, body)
+		log.Printf("Email sent successfully to %v ", msg.Email)
 	}
 	c.JSON(http.StatusOK, gin.H{"message :": "email service started listening"})
 }
