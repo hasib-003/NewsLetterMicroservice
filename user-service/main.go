@@ -5,6 +5,7 @@ import (
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/repository"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/service"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/email"
+	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/payment"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/subscription"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/utils"
 	"github.com/joho/godotenv"
@@ -52,6 +53,17 @@ func main() {
 		}
 	}(emailconn)
 	emailClient := email.NewEmailServiceClient(emailconn)
+	paymentconn, err := grpc.NewClient("localhost:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer func(paymentconn *grpc.ClientConn) {
+		err := paymentconn.Close()
+		if err != nil {
+			log.Fatalf("could not close connection: %v", err)
+		}
+	}(paymentconn)
+	paymentClient := payment.NewPaymentServiceClient(paymentconn)
 	rabitmqConn := config.ConnectRabitmq()
 	defer func(rabitmqConn *amqp.Connection) {
 		err := rabitmqConn.Close()
@@ -66,7 +78,7 @@ func main() {
 		panic(err)
 	}
 	userrepo := repository.NewUserRepository(config.DB, rabitmqConn)
-	userService := service.NewUserService(userrepo, newsClient, emailClient)
+	userService := service.NewUserService(userrepo, newsClient, emailClient, paymentClient)
 	server := gin.Default()
 	err = server.SetTrustedProxies([]string{"127.0.0.1"})
 	if err != nil {

@@ -137,6 +137,36 @@ func (uc *UserController) GetAllUserEmails(c *gin.Context) {
 }
 
 func (uc *UserController) SubscribeToTopic(c *gin.Context) {
+	userId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "user id not found"})
+		return
+	}
+	userIdStr, ok := userId.(string)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id format"})
+		return
+	}
+	userID, err := strconv.ParseInt(userIdStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid user id format"})
+		return
+	}
+	_, count, err := uc.UserService.GetSubscribedTopics(uint32(userID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	user, err := uc.UserService.GetUserById(int(userID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	if count > user.SubscriptionLimit-1 {
+		log.Printf("you have subscribed to more than 1 topic")
+		c.JSON(http.StatusNotAcceptable, gin.H{"error": "user already subscribed to more than two topic as free user"})
+		return
+
+	}
 	var request struct {
 		Email string `json:"email"`
 		Topic string `json:"topic"`
@@ -145,13 +175,14 @@ func (uc *UserController) SubscribeToTopic(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	log.Printf("handler topic:%v", request.Topic)
-	err := uc.UserService.SubscribeToTopic(request.Email, request.Topic)
+
+	err = uc.UserService.SubscribeToTopic(request.Email, request.Topic)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "successfully subscribed to topic"})
+
 }
 
 func (uc *UserController) GetSubscribedTopic(c *gin.Context) {
@@ -162,11 +193,12 @@ func (uc *UserController) GetSubscribedTopic(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user id"})
 		return
 	}
-	topics, err := uc.UserService.GetSubscribedTopics(uint32(userID))
+	topics, count, err := uc.UserService.GetSubscribedTopics(uint32(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	c.JSON(http.StatusOK, gin.H{"data": topics})
+	log.Printf("subscribed topic:%v count : %v", topics, count)
+	c.JSON(http.StatusOK, gin.H{"data": topics, "count": count})
 
 }
 
@@ -234,5 +266,28 @@ func (uc *UserController) PublishNews(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"data": userWithNews})
 
 	}
+
+}
+
+func (uc *UserController) BuySubscription(c *gin.Context) {
+	userId, exists := c.Get("userId")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user id not found"})
+	}
+	log.Printf("userId:%v", userId)
+	userIdStr, ok := userId.(string)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id format"})
+	}
+	userID, err := strconv.ParseUint(userIdStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user id"})
+		return
+	}
+	err = uc.UserService.BuySubscription(userID, 100)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "successfully buy subscription"})
 
 }

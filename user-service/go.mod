@@ -54,6 +54,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/streadway/amqp v1.1.0 // indirect
+	github.com/stripe/stripe-go v70.15.0+incompatible // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/gin-swagger v1.6.0 // indirect
 	github.com/swaggo/swag v1.16.4 // indirect

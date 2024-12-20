@@ -7,6 +7,7 @@ import (
 	models "github.com/hasib-003/newsLetterMicroservice/user-service/internal/model"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/internal/repository"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/email"
+	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/payment"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/proto/subscription"
 	"github.com/hasib-003/newsLetterMicroservice/user-service/utils"
 	"golang.org/x/crypto/bcrypt"
@@ -18,16 +19,18 @@ import (
 )
 
 type UserService struct {
-	repository  *repository.UserRepository
-	newsClient  subscription.NewsServiceClient
-	emailClient email.EmailServiceClient
+	repository    *repository.UserRepository
+	newsClient    subscription.NewsServiceClient
+	emailClient   email.EmailServiceClient
+	paymentClient payment.PaymentServiceClient
 }
 
-func NewUserService(repository *repository.UserRepository, newsClient subscription.NewsServiceClient, emailClient email.EmailServiceClient) *UserService {
+func NewUserService(repository *repository.UserRepository, newsClient subscription.NewsServiceClient, emailClient email.EmailServiceClient, paymentClient payment.PaymentServiceClient) *UserService {
 	return &UserService{
-		repository:  repository,
-		newsClient:  newsClient,
-		emailClient: emailClient,
+		repository:    repository,
+		newsClient:    newsClient,
+		emailClient:   emailClient,
+		paymentClient: paymentClient,
 	}
 }
 func (s *UserService) CreateUser(userEmail, name, password, role string) (*models.User, error) {
@@ -58,6 +61,15 @@ func (s *UserService) CreateUser(userEmail, name, password, role string) (*model
 		return nil, fmt.Errorf("email service error: %s", res.Message)
 	}
 	return s.repository.CreateUser(user)
+}
+
+func (s *UserService) GetUserById(id int) (*models.User, error) {
+	var user *models.User
+	user, err := s.repository.GetUserById(int64(id))
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
@@ -155,14 +167,22 @@ func (s *UserService) SubscribeToTopic(email string, topic string) error {
 	return nil
 }
 
-func (s *UserService) GetSubscribedTopics(userID uint32) ([]string, error) {
+func (s *UserService) GetSubscribedTopics(userID uint32) ([]string, int, error) {
 	req := &subscription.GetTopicRequest{UserId: userID}
 	res, err := s.newsClient.GetSubscribedTopics(context.Background(), req)
 	if err != nil {
 		log.Printf("get topic error: %v", err)
-		return nil, err
+		return nil, 0, err
 	}
-	return res.Topics, nil
+	topicMap := make(map[string]bool)
+	for _, topic := range res.Topics {
+		topicMap[topic] = true
+	}
+	var uniqueTopics []string
+	for topic := range topicMap {
+		uniqueTopics = append(uniqueTopics, topic)
+	}
+	return uniqueTopics, len(uniqueTopics), nil
 }
 
 func (s *UserService) GetSubscribedNews(userID uint) ([]*subscription.NewsItem, error) {
@@ -245,4 +265,25 @@ func (s *UserService) PublishUserWithNews() ([]*email.UserWithNews, error) {
 		return nil, fmt.Errorf("failed to publish user with news: %v", err)
 	}
 	return userWithNews, nil
+}
+
+func (s *UserService) BuySubscription(userId uint64, amount float64) error {
+	req := &payment.PaymentRequest{
+		UserId: userId,
+		Amount: amount,
+	}
+	resp, err := s.paymentClient.ProcessPayment(context.Background(), req)
+	if err != nil {
+		log.Printf("process payment error: %v", err)
+		return err
+	}
+	if !resp.Success {
+		return fmt.Errorf("process payment failed: %v", resp.Message)
+	}
+	err = s.repository.BuySubscription(userId)
+	if err != nil {
+		log.Printf("buy subscription error: %v", err)
+	}
+	log.Printf("buy subscription success: %v", resp.Message)
+	return nil
 }

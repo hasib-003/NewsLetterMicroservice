@@ -76,6 +76,13 @@ func (r *UserRepository) PublishUserWithNews(userWithNews []*email.UserWithNews)
 	return nil
 
 }
+func (r *UserRepository) GetUserById(userId int64) (*models.User, error) {
+	var user *models.User
+	if err := r.DB.First(&user, userId).Error; err != nil {
+		return nil, err
+	}
+	return user, nil
+}
 func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 	var user *models.User
 	if err := config.DB.Where("email = ?", email).First(&user).Error; err != nil {
@@ -104,4 +111,12 @@ func (r *UserRepository) GetAllUserEmails() ([]string, error) {
 		emails = append(emails, user.Email)
 	}
 	return emails, nil
+}
+
+func (r *UserRepository) BuySubscription(id uint64) error {
+	result := r.DB.Model(&models.User{}).Where("id=?", id).Update("subscription_limit", 100)
+	if result.Error != nil {
+		return fmt.Errorf("failed to buy subscription %d", id)
+	}
+	return nil
 }

@@ -11,6 +11,7 @@ type User struct {
 	Name              string    `json:"name"`
 	Password          string    `json:"-"`
 	Role              string    `json:"role"`
+	SubscriptionLimit int       `json:"subscriptionLimit" gorm:"default:2"`
 	Verified          bool      `json:"-" gorm:"default:false"`
 	VerificationToken string    `json:"-"`
 	TokenExpiresAt    time.Time `json:"-"`
