@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"errors"
-	"github.com/stripe/stripe-go"
-	"github.com/stripe/stripe-go/paymentintent"
+	"github.com/stripe/stripe-go/v72/paymentintent"
+
+	"github.com/stripe/stripe-go/v72"
 	"log"
 )
 
@@ -27,16 +27,7 @@ func (r *StripePaymentRepository) ProcessPayment(userId int, amount int) (string
 		log.Printf("Payment intent failed with %v", err)
 		return "", err
 	}
-	if intent.Status == "requires_confirmation" {
-		intent, err = paymentintent.Confirm(intent.ID, nil)
-		if err != nil {
-			log.Printf("Payment intent failed with %v", err)
-		}
-	}
-	if intent.Status != "succeeded" {
-		log.Printf("Payment intent failed with %v", intent)
-		return "", errors.New("Payment intent failed ")
-	}
-	log.Printf("Payment intent succeeded with %v", intent)
-	return string(intent.Status), nil
+	log.Printf("Payment intent is %v", intent)
+	return intent.ID, nil
+
 }
